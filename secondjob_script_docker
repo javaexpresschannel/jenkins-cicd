@@ -1,0 +1,29 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('SCM Checkout') {
+            steps {
+                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/javaexpresschannel/jenkins-cicd']])
+            }
+        }
+        
+         stage('Build Process') {
+            steps {
+               bat 'mvn clean install'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+               bat 'docker build -t javaexpress/springboot-docker .'
+            }
+        }
+
+        stage('Deployment') {
+            steps {
+               bat 'docker run -p 9097:8085 --name jecontainer javaexpress/springboot-docker'
+            }
+        }
+    }
+}
