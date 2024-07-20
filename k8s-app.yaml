@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: user-service-container
-          image: 'javaexpress/springboot-docker'
+          image: ''
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8085
