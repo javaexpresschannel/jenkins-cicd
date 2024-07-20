@@ -1,61 +1,60 @@
-pipeline {
+pipeline{
 
     agent any
     
-    tools {
-        maven "maven"
+    tools{
+        maven "maventool"
     }
 
-    environment {
-        APP_NAME = "springboot-docker-cicd"
-        DOCKER_USER = "javaexpress"
+    environment{
+           APP_NAME = "springboot-docker-cicd"
+           RELEASE_NO= "1.0.0"
+           DOCKER_USER= "javaexpress"
+           IMAGE_NAME= "${DOCKER_USER}"+"/"+"${APP_NAME}"
+           IMAGE_TAG= "${RELEASE_NO}-${BUILD_NUMBER}"
     }
 
-    stages {
-        stage("SCM checkout") {
-            steps {
-                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/javaexpresschannel/01_devops_springboot_maven']])
+    stages{
+
+        stage("SCM checkout"){
+            steps{
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/javatechie-devops/jenkins-ci-cd.git']])
             }
         }
 
-        stage("Build Process") {
-            steps {
-                script {
-                    bat 'mvn clean install'
-                }
-            }
-        }
-        stage('Set Environment Variables') {
-            steps {
-                script {
-                    env.IMAGE_NAME = "${env.DOCKER_USER}/${env.APP_NAME}"
+        stage("Build Process"){
+            steps{
+                script{
+                    sh 'mvn clean install'
                 }
             }
         }
 
-        stage("Build Image") {
-            steps {
-                script {
-                    bat 'docker build -t %IMAGE_NAME%:latest .'
+        stage("Build Image"){
+            steps{
+                script{
+                    sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
                 }
             }
         }
 
-        stage("Deploy Image to Hub") {
-            steps {
-                withCredentials([string(credentialsId: 'dp', variable: 'dp')]) {
-                    bat 'docker login -u javaexpress -p %dp%'
-                    bat 'docker push %IMAGE_NAME%:latest'
+        stage("Deploy Image to Hub"){
+            steps{
+                 withCredentials([string(credentialsId: 'DOCKER_HUB_PASSWORD', variable: 'DOCKER_HUB')]) {
+                 sh 'docker login -u javaexpress -p ${DOCKER_HUB}'
+                 sh 'docker push ${IMAGE_NAME}:${IMAGE_TAG}'
                 }
             }
         }
-        stage('Kubernetes Deployment') {
-            steps {
-                script {
-                    // Running the kubectl apply command
-                    bat 'kubectl apply -f k8s-app.yaml'
-                }
-            }
-        }
+        
+        stage("Deploy to Kubernetes" )
+		{
+			steps {
+				sh """
+					sed -i '' "s|image: '${IMAGE_NAME}:${IMAGE_TAG}'|g" k8s-app.yaml
+		   		   """
+				sh 'kubectl apply -f k8s-app.yaml'
+		}
+}
     }
 }
