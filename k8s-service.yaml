@@ -2,12 +2,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: userapp-service
-  namespace: user-dev
+  namespace: develop
 spec:
   selector:
     app: spring-boot-k8s
   ports:
     - protocol: TCP
-      port: 8086
+      port: 8089
       targetPort: 8085
   type: NodePort
