@@ -51,7 +51,7 @@ pipeline{
 		{
 			steps {
 				sh """
-					sed -i '' "s|image: '${IMAGE_NAME}:${IMAGE_TAG}'|g" k8s-app.yaml
+				    sed -i "s|image: ''|image: '${IMAGE_NAME}:${IMAGE_TAG}'|g" k8s-app.yaml
 		   		   """
 				sh 'kubectl apply -f k8s-app.yaml'
 		}
