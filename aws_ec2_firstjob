@@ -1,0 +1,35 @@
+pipeline {
+    agent any
+
+    tools {
+        maven "maventool"
+    }
+
+    stages {
+        stage('SCM Checkout') {
+            steps {
+                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/javaexpresschannel/jenkins-cicd']])
+            }
+        }
+        
+         stage('Build Process') {
+            steps {
+               sh 'mvn clean install'
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+               sh 'docker build -t javaexpress/springboot-docker .'
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+               withCredentials([string(credentialsId: 'DOCKER_HUB_PASSWORD', variable: 'DOCKER_HUB')]) {
+                    sh 'docker login -u javaexpress -p ${DOCKER_HUB}'
+                    sh 'docker push javaexpress/springboot-docker'
+                }
+            }
+        }
+    }
+}
