@@ -2,12 +2,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: user-deployment
-  namespace: user-dev
+  namespace: develop
 spec:
   selector:
     matchLabels:
       app: spring-boot-k8s
-  replicas: 2
+  replicas: 3
   template:
     metadata:
       labels:
@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: user-service-container
-          image: 'user-service:latest'
+          image: 'springboo-docker:latest'
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8085
