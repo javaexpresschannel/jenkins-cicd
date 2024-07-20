@@ -4,6 +4,6 @@ WORKDIR /app
 
 COPY ./target/user-service.jar /app
 
-EXPOSE 8080
+EXPOSE 8085
 
 CMD ["java","-jar","user-service.jar"]
